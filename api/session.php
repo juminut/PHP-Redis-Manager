@@ -1,0 +1,2 @@
+<?php
+return '[{"session_id":"b682bb855da416cfd1a5aae6845b4b44","time":1541483635,"array":1},{"session_id":"b064ddb5498215286abd48f67b2741b4","time":1541483808,"array":1},{"session_id":"2ee0f646e896464215987a7248f7d485","time":1541483835,"array":1},{"session_id":"1f1518a4e50feb6df2745fce27771b73","time":1541483977,"array":0},{"session_id":"f5b79d1d81b3e900846ec546f8ffa72e","time":1541484156,"array":{"user_auth":0}}]'; ?>
