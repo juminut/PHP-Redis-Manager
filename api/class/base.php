@@ -2,16 +2,16 @@
 
 class base
 {
-    private $redis;
+    public $redis;
 
     //构造
     public function __construct()
     {
         $redis_connect_list = [];
-        include_once '../config.php';
-        if (!$redis_connect_list || !$redis_connect_list[0]['host']) throw new Exception('缺少参数 请检查');
+        include_once __DIR__ . '/../config.php';
+        if (!$redis_connect_list || !$redis_connect_list['host']) throw new Exception('缺少参数 请检查');
         $this->redis = new Redis();
-        $this->redis->connect($redis_connect_list[0]['host'], ($redis_connect_list[0]['port'] ? $redis_connect_list[0]['port'] : 6379));
+        $this->redis->connect($redis_connect_list['host'], ($redis_connect_list['port'] ? $redis_connect_list['port'] : 6379));
     }
 
     //初始化
@@ -48,8 +48,32 @@ class base
 
     }
 
+    //获取长度
+    public function len($key)
+    {
+        switch ($this->redis->type($key)) {
+            case 2: //set
+                $len = $this->redis->sCard($key);
+                break;
+            case 3: //list
+                $len = $this->redis->lLen($key);
+                break;
+            case 4: //zset
+                $len = $this->redis->zCard($key);
+                break;
+            case 5: //hash
+                $len = $this->redis->hLen($key);
+                break;
+            default:
+                throw new Exception('key 类型错误');
+                break;
+        }
+        return $len;
+    }
+
     //获取类型
-    public function getType($key){
+    public function getType($key)
+    {
         switch ($this->redis->type($key)) {
             case 0:
                 throw new Exception('key不存在');
@@ -74,13 +98,13 @@ class base
     }
 
     //获取数组维度
-    public function arrayDepth($array) {
-        if(!is_array($array)) return 0;
+    public function arrayDepth($array)
+    {
+        if (!is_array($array)) return 0;
         $max_depth = 1;
         foreach ($array as $value) {
             if (is_array($value)) {
                 $depth = arrayDepth($value) + 1;
-
                 if ($depth > $max_depth) {
                     $max_depth = $depth;
                 }
@@ -88,6 +112,33 @@ class base
         }
         return $max_depth;
     }
+
+    /*public function systemFunction($name, $key, $values, $db = 0)
+    {
+
+        if (!method_exists($this->redis, $name))
+            throw new Exception('redis没有这个方法');
+
+        //选择数据库
+        if ($db > 0 && $db <= $this->redis->config('get', 'databases')['databases'])
+            $this->redis->select($db);
+
+
+        if ($this->redis->exists($key)) {
+            $type = $this->getType($key);
+            if (gettype($values) == 'string') {
+                if (!in_array($type, [])){
+
+                }
+                    #code....
+            } else {
+                throw new Exception('类型错误');
+            }
+        }
+
+        echo $this->redis->$name($key, $values);
+
+    }*/
 }
 
 //$obj = new base();
