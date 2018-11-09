@@ -2,6 +2,7 @@
 
 class base
 {
+    //对外暴露redis对象
     public $redis;
 
     //构造
@@ -104,7 +105,7 @@ class base
         $max_depth = 1;
         foreach ($array as $value) {
             if (is_array($value)) {
-                $depth = arrayDepth($value) + 1;
+                $depth = $this->arrayDepth($value) + 1;
                 if ($depth > $max_depth) {
                     $max_depth = $depth;
                 }
@@ -112,6 +113,33 @@ class base
         }
         return $max_depth;
     }
+
+
+    //转换一维数组
+    public function transformation($val)
+    {
+        //判断数组维度 并处理
+        switch ($this->arrayDepth($val)) {
+            case 0: //字符串或空
+                $data[] = $val;
+                break;
+            case 1:
+                $data = $val;
+                break;
+            case 2: //二维 并转一维
+                //array_column 可以替代下面foreach
+                foreach ($val as $values)
+                    foreach ($values as $value)
+                        $data[] = $value;
+                break;
+            case 3: //三维
+                break;
+            default://多维
+                $data = false;
+        }
+        return $data;
+    }
+
 
     /*public function systemFunction($name, $key, $values, $db = 0)
     {
@@ -144,6 +172,5 @@ class base
 //$obj = new base();
 //$redis = $obj->key('temps');
 //$redis->getList();
-?>
 
 
