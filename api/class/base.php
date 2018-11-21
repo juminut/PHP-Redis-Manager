@@ -23,8 +23,17 @@ class base
             $this->redis->select($db);
 
         //如果key存在 则验证类型
-        if ($this->redis->exists($key) && !$this->verification($key, $type))
-            throw new Exception('类型错误');
+        if (is_array($key)) {
+            foreach ($key as $value) {
+                if ($this->redis->exists($value) && !$this->verification($value, $type))
+                    throw new Exception($value . ' 类型错误');
+            }
+        } else {
+            if ($this->redis->exists($key) && !$this->verification($key, $type))
+                throw new Exception('类型错误');
+        }
+
+
 
         //引入相对应的文件
         if (!is_file($type . 'Class.php'))
@@ -114,7 +123,6 @@ class base
         return $max_depth;
     }
 
-
     //转换一维数组
     public function transformation($val)
     {
@@ -140,37 +148,30 @@ class base
         return $data;
     }
 
-
-    /*public function systemFunction($name, $key, $values, $db = 0)
+    //转码
+    public function encode($val)
     {
-
-        if (!method_exists($this->redis, $name))
-            throw new Exception('redis没有这个方法');
-
-        //选择数据库
-        if ($db > 0 && $db <= $this->redis->config('get', 'databases')['databases'])
-            $this->redis->select($db);
-
-
-        if ($this->redis->exists($key)) {
-            $type = $this->getType($key);
-            if (gettype($values) == 'string') {
-                if (!in_array($type, [])){
-
-                }
-                    #code....
-            } else {
-                throw new Exception('类型错误');
-            }
+        if (is_array($val)) {
+            $res = json_encode($val);
+        } elseif (is_object($val)) {
+            $res = serialize($val);
+        } else {
+            $res = $val;
         }
+        return $res;
+    }
 
-        echo $this->redis->$name($key, $values);
-
-    }*/
+    //解码
+    public function decode($val, $assoc = 1)
+    {
+        $data = @json_decode($val, $assoc);
+        if (!$data || @count($data) == 0)
+            $data = @unserialize($val);
+        if (!is_object($data))
+            $data = $val;
+        return $data;
+    }
 }
 
-//$obj = new base();
-//$redis = $obj->key('temps');
-//$redis->getList();
 
 
